@@ -4,7 +4,7 @@ pipeline AirportPipeline {
         -> AirportTextFileInterpreter
         -> AirportCSVInterpreter
         -> AirportTableInterpreter
-        -> AirportsLoader;
+        -> AirportLoader;
 
     block AirportExtractor oftype HttpExtractor {
         url: "https://opendata.rhein-kreis-neuss.de/api/explore/v2.1/catalog/datasets/rhein-kreis-neuss-flughafen-weltweit/exports/csv?lang=en&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B";
@@ -13,7 +13,6 @@ pipeline AirportPipeline {
     block AirportTextFileInterpreter oftype TextFileInterpreter { }
 
     block AirportCSVInterpreter oftype CSVInterpreter {
-        enclosing: '';
         delimiter: ";";
     }
 
@@ -21,22 +20,22 @@ pipeline AirportPipeline {
         header: true;
         columns: [
             "column_1" oftype integer,
-            "column_2" oftype text,
-            "column_3" oftype text,
-            "column_4" oftype text,
-            "column_5" oftype text,
-            "column_6" oftype text,
-            "column_7" oftype decimal,
-            "column_8" oftype decimal,
-            "column_9" oftype integer,
-            "column_10" oftype decimal,
-            "column_11" oftype text,
+			"column_2" oftype text,
+			"column_3" oftype text,
+			"column_4" oftype text,
+			"column_5" oftype text,
+			"column_6" oftype text,
+			"column_7" oftype decimal,
+			"column_8" oftype decimal,
+			"column_9" oftype integer,
+			"column_10" oftype decimal,
+			"column_11" oftype text,
             "column_12" oftype text,
-            "geo_punkt" oftype text
+			"geo_punkt" oftype text
         ];
     }
 
-    block AirportsLoader oftype SQLiteLoader {
+    block AirportLoader oftype SQLiteLoader {
         table: "airports";
         file: "./airports.sqlite";
     }
