@@ -1,0 +1,65 @@
+pipeline TransportationDataPipeline {
+    block DataFetcher oftype HttpExtractor {
+        url: "https://download-data.deutschebahn.com/static/datasets/haltestellen/D_Bahnhof_2020_alle.CSV";
+    }
+
+    block DataPreprocessor oftype TextFilePreprocessor {
+        // Perform any necessary preprocessing steps here
+    }
+
+    block CSVInterpreter oftype CSVInterpreter {
+        delimiter: ",";
+        // Additional CSVInterpreter configurations if needed
+    }
+
+    block DataTransformer oftype DataTransformer {
+        // Transform the data as required
+    }
+
+    block DataValidator oftype DataValidator {
+        // Implement data validation rules
+    }
+
+    block DatabaseLoader oftype SQLiteLoader {
+        table: "trainstops";
+        file: "./trainstops.sqlite";
+    }
+
+    // Define constraints for data validation
+    constraint ValidTransportType oftype AllowlistConstraint {
+        allowlist: ["FV", "RV", "nur DPN"];
+    }
+
+    constraint ValidGeoCoordinateRange oftype RangeConstraint {
+        lowerBound: -90;
+        upperBound: 90;
+    }
+
+    constraint ValidIFOPTFormat oftype RegexConstraint {
+        regex: /[a-z]{2}:\d+:\d+(:\d+)?$/;
+    }
+
+    // Define custom data types
+    valuetype TransportType oftype text {
+        constraints: [ValidTransportType];
+    }
+
+    valuetype GeoCoordinate oftype decimal {
+        constraints: [ValidGeoCoordinateRange];
+    }
+
+    valuetype IFOPTCode oftype text {
+        constraints: [ValidIFOPTFormat];
+    }
+
+    // Data processing pipeline
+    DataFetcher
+        -> DataPreprocessor
+        -> CSVInterpreter
+        -> DataTransformer
+        -> DataValidator;
+
+    // Loading validated data into the database
+    DataValidator
+        -> DatabaseLoader;
+}
