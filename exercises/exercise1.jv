@@ -1,3 +1,4 @@
+pipeline AirportPipeline {
     AirportXtrctr-> AirportTFIntrptr-> AirportCSVIntrptr -> AirportTblIntrptr-> AirportLdr;
 
     block AirportXtrctr oftype HttpExtractor {
