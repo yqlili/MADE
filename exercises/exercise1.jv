@@ -40,4 +40,4 @@ pipeline AirportPipeline {
         file: "./airports.sqlite";
     }
 
-}.
+}
