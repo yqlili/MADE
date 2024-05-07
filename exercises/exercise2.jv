@@ -1,23 +1,23 @@
-pipeline UrbanGreeneryPipeline {
+pipeline TreePipeline {
 
-    UrbanGreeneryExtractor
-        -> UrbanGreeneryTextFileInterpreter
-        -> UrbanGreeneryCSVInterpreter
-        -> UrbanGreeneryTableInterpreter
-        -> UrbanGreeneryLoader;
+    TreeExtractor
+        -> TreeTextFileInterpreter
+        -> TreeCSVInterpreter
+        -> TreeTableInterpreter
+        -> TreeLoader;
 
-    block UrbanGreeneryExtractor oftype HttpExtractor {
+    block TreeExtractor oftype HttpExtractor {
         url: "https://opendata.rhein-kreis-neuss.de/api/v2/catalog/datasets/urban-greenery-neuss-2024/exports/csv";
     }
 
-    block UrbanGreeneryTextFileInterpreter oftype TextFileInterpreter {}
+    block TreeTextFileInterpreter oftype TextFileInterpreter {}
 
-    block UrbanGreeneryCSVInterpreter oftype CSVInterpreter {
+    block TreeCSVInterpreter oftype CSVInterpreter {
         delimiter: ';';
         enclosing: '"';
     }
 
-    block UrbanGreeneryTableInterpreter oftype TableInterpreter {
+    block TreeTableInterpreter oftype TableInterpreter {
         header: true;
         columns: [
             "id" oftype GeoCoordinate,
@@ -29,9 +29,9 @@ pipeline UrbanGreeneryPipeline {
         ];
     }
 
-    block UrbanGreeneryLoader oftype SQLiteLoader {
-        table: "urban_trees";
-        file: "./urban_trees.sqlite";
+    block TreeLoader oftype SQLiteLoader {
+        table: "trees";
+        file: "./trees.sqlite";
     }
 
 }
