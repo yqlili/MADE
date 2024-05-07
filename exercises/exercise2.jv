@@ -1,0 +1,53 @@
+pipeline UrbanGreeneryPipeline {
+
+    UrbanGreeneryExtractor
+        -> UrbanGreeneryTextFileInterpreter
+        -> UrbanGreeneryCSVInterpreter
+        -> UrbanGreeneryTableInterpreter
+        -> UrbanGreeneryLoader;
+
+    block UrbanGreeneryExtractor oftype HttpExtractor {
+        url: "https://opendata.rhein-kreis-neuss.de/api/v2/catalog/datasets/urban-greenery-neuss-2024/exports/csv";
+    }
+
+    block UrbanGreeneryTextFileInterpreter oftype TextFileInterpreter {}
+
+    block UrbanGreeneryCSVInterpreter oftype CSVInterpreter {
+        delimiter: ';';
+        enclosing: '"';
+    }
+
+    block UrbanGreeneryTableInterpreter oftype TableInterpreter {
+        header: true;
+        columns: [
+            "id" oftype GeoCoordinate,
+            "location" oftype UrbanArea,
+            "tree_species" oftype text,
+            "family" oftype text,
+            "age" oftype integer,
+            "health_status" oftype text,
+        ];
+    }
+
+    block UrbanGreeneryLoader oftype SQLiteLoader {
+        table: "urban_trees";
+        file: "./urban_trees.sqlite";
+    }
+
+}
+
+valuetype UrbanArea oftype text {
+    constraints: [OnlyFurth];
+}
+
+constraint OnlyFurth oftype RegexConstraint {
+    regex: /Furth-(.+)/;
+}
+
+valuetype GeoCoordinate oftype text {
+    constraints: [XYCoordinateFormat];
+}
+
+constraint XYCoordinateFormat oftype RegexConstraint {
+    regex: /\d{1,3}\.\d+\,\s*\d{1,3}\.\d+/;
+}
