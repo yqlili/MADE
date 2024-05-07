@@ -1,53 +1,58 @@
-pipeline TreePipeline {
+pipeline UrbanTreesPipeline {
 
-    TreeExtractor
-        -> TreeTextFileInterpreter
-        -> TreeCSVInterpreter
-        -> TreeTableInterpreter
-        -> TreeLoader;
+    TreeDataExtractor
+        -> TreeFileInterpreter
+        -> TreeCSVParser
+        -> TreeDataFilter
+        -> TreeDataTableInterpreter
+        -> TreeDataLoader;
 
-    block TreeExtractor oftype HttpExtractor {
-        url: "https://opendata.rhein-kreis-neuss.de/api/v2/catalog/datasets/urban-greenery-neuss-2024/exports/csv";
+    block TreeDataExtractor oftype HttpExtractor {
+        url: "https://opendata.rhein-kreis-neuss.de/api/v2/catalog/datasets/stadt-neuss-herbstpflanzung-2023/exports/csv";
     }
 
-    block TreeTextFileInterpreter oftype TextFileInterpreter {}
+    block TreeFileInterpreter oftype TextFileInterpreter { }
 
-    block TreeCSVInterpreter oftype CSVInterpreter {
+    block TreeCSVParser oftype CSVInterpreter {
         delimiter: ';';
-        enclosing: '"';
+        quoteChar: '"';
     }
 
-    block TreeTableInterpreter oftype TableInterpreter {
+    block TreeDataFilter oftype ColumnFilter {
+        keep: ["lfd_nr", "stadtteil", "standort", "baumart_botanisch", "id", "baumfamilie"];
+    }
+
+    valuetype CoordinatePair oftype text {
+        constraints: [ ValidGeoCoordinates ];
+    }
+
+    constraint ValidGeoCoordinates oftype RegexConstraint {
+        regex: /\d{1,3}\.\d{1,6}\s*,\s*\d{1,3}\.\d{1,6}/;
+    }
+
+    valuetype DistrictName oftype text {
+        constraints: [ FurthDistrictOnly ];
+    }
+
+    constraint FurthDistrictOnly oftype RegexConstraint {
+        regex: /Furth-(Nord|Mitte|Süd)/;
+    }
+
+    block TreeDataTableInterpreter oftype TableInterpreter {
         header: true;
         columns: [
-            "id" oftype GeoCoordinate,
-            "location" oftype UrbanArea,
-            "tree_species" oftype text,
-            "family" oftype text,
-            "age" oftype integer,
-            "health_status" oftype text,
+            "lfd_nr" oftype integer,
+            "stadtteil" oftype DistrictName,
+            "standort" oftype text,
+            "baumart_botanisch" oftype text,
+            "id" oftype CoordinatePair,
+            "baumfamilie" oftype text
         ];
     }
 
-    block TreeLoader oftype SQLiteLoader {
+    block TreeDataLoader oftype SQLiteLoader {
         table: "trees";
-        file: "trees.sqlite";
+        file: "./trees.sqlite";
     }
 
-}
-
-valuetype UrbanArea oftype text {
-    constraints: [OnlyFurth];
-}
-
-constraint OnlyFurth oftype RegexConstraint {
-    regex: /Furth-(.+)/;
-}
-
-valuetype GeoCoordinate oftype text {
-    constraints: [XYCoordinateFormat];
-}
-
-constraint XYCoordinateFormat oftype RegexConstraint {
-    regex: /\d{1,3}\.\d+\,\s*\d{1,3}\.\d+/;
 }
