@@ -29,7 +29,7 @@ Short description of the DataSource.
 
 <!-- List of work packages ordered sequentially, each pointing to an issue with more details. -->
 
-1. Example Issue [#1][i1]
+1. Search for available dataset [https://github.com/yqlili/MADE/issues/1]
 2. ...
 
 [i1]: https://github.com/jvalue/made-template/issues/1
