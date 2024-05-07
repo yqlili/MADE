@@ -1,56 +1,56 @@
-pipeline UrbanTreesPipeline {
+pipeline NeussTreesPipeline {
 
-    TreeDataExtractor
-        -> TreeFileInterpreter
-        -> TreeCSVParser
-        -> TreeDataFilter
-        -> TreeDataTableInterpreter
-        -> TreeDataLoader;
+    NeussTreeDataExtractor
+        -> NeussTreeFileInterpreter
+        -> NeussTreeCSVParser
+        -> NeussTreeDataFilter
+        -> NeussTreeDataTableInterpreter
+        -> NeussTreeDataLoader;
 
-    block TreeDataExtractor oftype HttpExtractor {
+    block NeussTreeDataExtractor oftype HttpExtractor {
         url: "https://opendata.rhein-kreis-neuss.de/api/v2/catalog/datasets/stadt-neuss-herbstpflanzung-2023/exports/csv";
     }
 
-    block TreeFileInterpreter oftype TextFileInterpreter { }
+    block NeussTreeFileInterpreter oftype TextFileInterpreter { }
 
-    block TreeCSVParser oftype CSVInterpreter {
+    block NeussTreeCSVParser oftype CSVInterpreter {
         delimiter: ';';
         quoteChar: '"';
     }
 
-    block TreeDataFilter oftype ColumnFilter {
+    block NeussTreeDataFilter oftype ColumnFilter {
         keep: ["lfd_nr", "stadtteil", "standort", "baumart_botanisch", "id", "baumfamilie"];
     }
 
-    valuetype CoordinatePair oftype text {
-        constraints: [ ValidGeoCoordinates ];
+    valuetype GeoPoint oftype text {
+        constraints: [ ValidGeoPoint ];
     }
 
-    constraint ValidGeoCoordinates oftype RegexConstraint {
-        regex: /\d{1,3}\.\d{1,6}\s*,\s*\d{1,3}\.\d{1,6}/;
+    constraint ValidGeoPoint oftype RegexConstraint {
+        regex: /\b\d{1,3}\.\d+\s*,\s*\d{1,3}\.\d+\b/;
     }
 
-    valuetype DistrictName oftype text {
-        constraints: [ FurthDistrictOnly ];
+    valuetype FurthDistrict oftype text {
+        constraints: [ StartsFurth ];
     }
 
-    constraint FurthDistrictOnly oftype RegexConstraint {
-        regex: /Furth-(Nord|Mitte|Süd)/;
+    constraint StartsFurth oftype RegexConstraint {
+        regex: /^Furth-/;
     }
 
-    block TreeDataTableInterpreter oftype TableInterpreter {
+    block NeussTreeDataTableInterpreter oftype TableInterpreter {
         header: true;
         columns: [
-            "lfd_nr" oftype integer,
-            "stadtteil" oftype DistrictName,
-            "standort" oftype text,
-            "baumart_botanisch" oftype text,
-            "id" oftype CoordinatePair,
-            "baumfamilie" oftype text
+            "lfd_nr" oftype BIGINT,
+            "stadtteil" oftype FurthDistrict,
+            "standort" oftype TEXT,
+            "baumart_botanisch" oftype TEXT,
+            "id" oftype GeoPoint,
+            "baumfamilie" oftype TEXT
         ];
     }
 
-    block TreeDataLoader oftype SQLiteLoader {
+    block NeussTreeDataLoader oftype SQLiteLoader {
         table: "trees";
         file: "./trees.sqlite";
     }
